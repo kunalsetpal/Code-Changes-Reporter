@@ -14,16 +14,8 @@ import org.eclipse.egit.github.core.service.*;
 
 public class Main {
 	public static void main(String [] args){
-		//GitHubClient client = new GitHubClient();
 		GitHubClient githubClient = new GitHubClient();
-		githubClient.setCredentials("USERNAME", "PASSWORD");
-//		GitHubClient client = new GitHubClient();
-//		client.setOAuth2Token(Credentials.TOKEN);
-		
-		
-		
-		
-		
+		githubClient.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
 		
 		//final RepositoryId repoID = new RepositoryId("adblockplus", "adblockplusandroid");
 
