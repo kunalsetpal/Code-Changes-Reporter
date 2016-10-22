@@ -6,8 +6,8 @@ import org.eclipse.egit.github.core.service.*;
 
 public class Main {
 	public static void main(String [] args){
-		//GitHubClient client = new GitHubClient();
-		
+		GitHubClient client = new GitHubClient();
+		client.setOAuth2Token(Credentials.TOKEN);
 		
 		RepositoryService service = new RepositoryService();
 		try {
