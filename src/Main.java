@@ -1,11 +1,8 @@
-
-import com.google.gson.Gson;
-import org.eclipse.egit.github.core.*;
+import org.eclipse.egit.github.core.Release;
 
 public class Main {
-	public static void main(String []a)
+	public static void main(String []args)
 	{
-		
 		
 	}
 }
