@@ -24,20 +24,11 @@ public class Main {
 	public static void main(String [] args){
 		GitHubClient client = new GitHubClient();
 		client.setOAuth2Token(Credentials.TOKEN);
-		//GitHubClient client = new GitHubClient();
-		GitHubClient githubClient = new GitHubClient();
-		githubClient.setCredentials("USERNAME", "PASSWORD");
-//		GitHubClient client = new GitHubClient();
-//		client.setOAuth2Token(Credentials.TOKEN);
-		
-		
-		
-		
-		
+		//githubClient.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
 		
 		//final RepositoryId repoID = new RepositoryId("adblockplus", "adblockplusandroid");
 
-		RepositoryService repoService = new RepositoryService(githubClient);
+		RepositoryService repoService = new RepositoryService(client);
 		
 		RepositoryService service = new RepositoryService();
 		RepositoryId repoID = new RepositoryId("yarnpkg", "yarn");
@@ -88,7 +79,7 @@ public class Main {
 			Main.ORMSQLite orm = m.new ORMSQLite();*/
 			new Main().new ORMSQLite();
 			
-			/*List <Release>listRelease = repoService.getReleases(repoID);
+			List <Release>listRelease = repoService.getReleases(repoID);
 			System.out.println(listRelease.size());
 			
 //			for(Release repoReleases : repoService.getReleases(repo)){
@@ -101,7 +92,7 @@ public class Main {
 			
 			Collections.sort(listRelease, (release1, release2) -> release1.getCreatedAt().compareTo(release2.getCreatedAt()));
 			
-			CommitService commitService = new CommitService(githubClient);
+			CommitService commitService = new CommitService(client);
 			List <RepositoryCommit>listCommit = commitService.getCommits(repoID);
 			
 			Collections.sort(listCommit, (repoCommit1, repoCommit2) -> repoCommit1.getCommit().getCommitter().getDate().compareTo(repoCommit2.getCommit().getCommitter().getDate()));
@@ -160,7 +151,7 @@ public class Main {
 				printWriter.println("=============================================================================");
 
 			}
-			*/
+			printWriter.close();
 			
 //			System.out.println(counter);
 			
