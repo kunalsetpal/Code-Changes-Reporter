@@ -42,11 +42,11 @@ import java.util.Map.Entry;
 import org.eclipse.egit.github.core.Contributor;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.IResourceProvider;
+import org.eclipse.egit.github.core.Release;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.RepositoryRelease;
 import org.eclipse.egit.github.core.RepositoryTag;
 import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -841,15 +841,15 @@ public class RepositoryService extends GitHubService {
 	 * @return list of releases
 	 * @throws IOException
 	 */
-	public List<RepositoryRelease> getReleases(IRepositoryIdProvider repository)
+	public List<Release> getReleases(IRepositoryIdProvider repository)
 			throws IOException {
 		String id = getId(repository);
 		StringBuilder uri = new StringBuilder(SEGMENT_REPOS);
 		uri.append('/').append(id);
 		uri.append(SEGMENT_RELEASES);
-		PagedRequest<RepositoryRelease> request = createPagedRequest();
+		PagedRequest<Release> request = createPagedRequest();
 		request.setUri(uri);
-		request.setType(new TypeToken<List<RepositoryRelease>>() {
+		request.setType(new TypeToken<List<Release>>() {
 		}.getType());
 		return getAll(request);
 	}
