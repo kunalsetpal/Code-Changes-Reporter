@@ -17,27 +17,8 @@ public class Main {
 		//GitHubClient client = new GitHubClient();
 		GitHubClient githubClient = new GitHubClient();
 		githubClient.setCredentials("USERNAME", "PASSWORD");
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+//		GitHubClient client = new GitHubClient();
+//		client.setOAuth2Token(Credentials.TOKEN);
 		
 		
 		
