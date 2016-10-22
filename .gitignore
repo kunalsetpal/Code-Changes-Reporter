@@ -2,3 +2,4 @@
 .DS_Store
 *.class
 Credentials.java
+**/rit.swen772.ccr/Credentials.java
