@@ -21,18 +21,25 @@ import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 public class Main {
+	
+	private static GitHubClient client;
+	
 	public static void main(String [] args){
-		GitHubClient client = new GitHubClient();
-		client.setOAuth2Token(Credentials.TOKEN);
+		client = new GitHubClient();
+		client.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
+//		client.setOAuth2Token(Credentials.TOKEN);
 		//githubClient.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
 		
 		//final RepositoryId repoID = new RepositoryId("adblockplus", "adblockplusandroid");
 
-		RepositoryService repoService = new RepositoryService(client);
+//		RepositoryService repoService = new RepositoryService(client);
 		
 		RepositoryService service = new RepositoryService();
 		RepositoryId repoID = new RepositoryId("yarnpkg", "yarn");
 		CommitService cService = new CommitService();
+		
+		fetchContributorsAndCommitsPerReleaseForRepository(repoID);
+		
 		try {
 			/*for(Repository repo : service.getRepositories("yarnpkg"))
 				System.out.println(repo.getName());*/
@@ -71,16 +78,15 @@ public class Main {
 			list.toArray(array);*/
 			//.toArray()
 			//RepositoryRelease[] rArray = lRepoReleases.toArray(new RepositoryRelease[lRepoReleases.size()]);
-			
-			
+
 			//?since=2016-10-20T00:00:00-5:00
 			//System.out.println(counter);
 			/*Main m = new Main();
 			Main.ORMSQLite orm = m.new ORMSQLite();*/
-			new Main().new ORMSQLite();
 			
-			List <Release>listRelease = repoService.getReleases(repoID);
-			System.out.println(listRelease.size());
+			//For Database
+			new Main().new ORMSQLite();
+
 			
 //			for(Release repoReleases : repoService.getReleases(repo)){
 //				System.out.println(repoReleases.getTagName());
@@ -90,13 +96,28 @@ public class Main {
 //				++counter;
 //			}
 			
+		} catch(Exception e) { e.printStackTrace(); }
+	}
+	
+	public static void fetchContributorsAndCommitsPerReleaseForRepository(RepositoryId repositoryID) {
+		
+		try {
+			RepositoryService repoService = new RepositoryService(client);
+			
+			List <Release>listRelease = repoService.getReleases(repositoryID);
+			System.out.println(listRelease.size());
+			
+			//Sort Releases
 			Collections.sort(listRelease, (release1, release2) -> release1.getCreatedAt().compareTo(release2.getCreatedAt()));
 			
 			CommitService commitService = new CommitService(client);
-			List <RepositoryCommit>listCommit = commitService.getCommits(repoID);
+			List <RepositoryCommit>listCommit = commitService.getCommits(repositoryID);
 			
+			//Sort Repository Commits
 			Collections.sort(listCommit, (repoCommit1, repoCommit2) -> repoCommit1.getCommit().getCommitter().getDate().compareTo(repoCommit2.getCommit().getCommitter().getDate()));
 			
+			//This file will be created in your source repository. It will contain the details
+			//TODO: This has to be added to the Database.
 			PrintWriter printWriter = new PrintWriter("CCRS.txt");
 			
 			Date previousReleaseDate = new Date();
@@ -107,7 +128,6 @@ public class Main {
 			
 			for (Release release : listRelease) {
 				releaseNumber++;
-//				System.out.println("RELEASE: " + release.getCreatedAt() + " " + release.getName());
 				printWriter.println("RELEASE #" + releaseNumber);
 				printWriter.println("RELEASE DETAILS: " + release.getCreatedAt() + " " + release.getName());
 				printWriter.println("");
@@ -116,6 +136,7 @@ public class Main {
 				
 				final Date pReleaseDate = previousReleaseDate;
 				
+				//Identify Commits Per Release
 				List <RepositoryCommit> releaseCommits;
 				if (isFirst) {
 					releaseCommits = listCommit.stream().filter(repoCommit -> repoCommit.getCommit().getCommitter().getDate().before(release.getCreatedAt())).collect(Collectors.toList());
@@ -137,6 +158,7 @@ public class Main {
 					printWriter.println(repositoryCommit.getCommit().getMessage());
 					printWriter.println(repositoryCommit.getCommit().getCommitter().getDate());
 					
+					//Identify Contributors per Release
 					if (!releaseContributorsList.contains(repositoryCommit.getCommit().getCommitter().getEmail())) {
 						releaseContributorsList.add(repositoryCommit.getCommit().getCommitter().getEmail());
 					}
@@ -152,8 +174,6 @@ public class Main {
 
 			}
 			printWriter.close();
-			
-//			System.out.println(counter);
 			
 		} catch(Exception e) { e.printStackTrace(); }
 	}
