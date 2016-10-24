@@ -76,4 +76,15 @@ public class CommitUser implements Serializable {
 		this.name = name;
 		return this;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof CommitUser) {
+			CommitUser temp = (CommitUser)o;
+	        if (this.getEmail().equals(temp.getEmail())) {
+	            return true;
+	        }
+		}
+	    return false;
+	}
 }

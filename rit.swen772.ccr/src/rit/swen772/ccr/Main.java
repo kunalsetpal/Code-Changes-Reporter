@@ -4,12 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.PrintWriter;
+import java.nio.file.attribute.GroupPrincipal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.egit.github.core.*;
 import org.eclipse.egit.github.core.client.*;
@@ -38,6 +41,7 @@ public class Main {
 		RepositoryId repoID = new RepositoryId("yarnpkg", "yarn");
 		CommitService cService = new CommitService();
 		
+		//COMMENT this out if you want to reduce calls
 		fetchContributorsAndCommitsPerReleaseForRepository(repoID);
 		
 		try {
@@ -85,7 +89,7 @@ public class Main {
 			Main.ORMSQLite orm = m.new ORMSQLite();*/
 			
 			//For Database
-			new Main().new ORMSQLite();
+//			new Main().new ORMSQLite();
 
 			
 //			for(Release repoReleases : repoService.getReleases(repo)){
@@ -125,6 +129,8 @@ public class Main {
 			
 			int releaseNumber = 0;
 			int commitNumber = 0;
+			ArrayList<CommitUser> projectContributorsList = new ArrayList<CommitUser>();
+			Map<String, List<RepositoryCommit>> commitsByContributors = new HashMap<String, List<RepositoryCommit>>();
 			
 			for (Release release : listRelease) {
 				releaseNumber++;
@@ -162,6 +168,25 @@ public class Main {
 					if (!releaseContributorsList.contains(repositoryCommit.getCommit().getCommitter().getEmail())) {
 						releaseContributorsList.add(repositoryCommit.getCommit().getCommitter().getEmail());
 					}
+
+					//Identify Contributors for the Project
+					if (!projectContributorsList.contains(repositoryCommit.getCommit().getCommitter())) {
+						projectContributorsList.add(repositoryCommit.getCommit().getCommitter());						
+					}
+					
+					//Mapping Commits with Contributors
+					String commitUserEmail = repositoryCommit.getCommit().getCommitter().getEmail();
+					
+					if (commitsByContributors.get(commitUserEmail) == null) {
+						List <RepositoryCommit> repoCommits = new ArrayList<RepositoryCommit>(); 
+						repoCommits.add(repositoryCommit);
+						commitsByContributors.put(commitUserEmail, repoCommits);
+					} else {
+						List <RepositoryCommit> repoCommits = commitsByContributors.get(commitUserEmail);
+						repoCommits.add(repositoryCommit);
+						commitsByContributors.put(commitUserEmail, repoCommits);
+					}
+
 					
 					printWriter.println("----------------------------------------------------");
 				}
@@ -173,10 +198,21 @@ public class Main {
 				printWriter.println("=============================================================================");
 
 			}
+
+			printWriter.println("=============================================================================");
+			printWriter.println("PROJECT CONTRIBUTORS: ");
+			for (CommitUser commitUser : projectContributorsList) {
+				printWriter.println(commitUser.getEmail());
+				printWriter.println("Commits: " + commitsByContributors.get(commitUser.getEmail()).size());					
+			}
+			printWriter.println("=============================================================================");
+
 			printWriter.close();
 			
 		} catch(Exception e) { e.printStackTrace(); }
 	}
+	
+	
 	
 	private class ORMSQLite{
 		private final String databaseUrl = "jdbc:sqlite:sample.db";
