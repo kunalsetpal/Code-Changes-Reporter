@@ -8,16 +8,16 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.j256.ormlite.table.TableUtils;
 
-@DatabaseTable(tableName = "testdb")
+@DatabaseTable(tableName = "User")
 public class TestDB implements IDAO {
-	//@DatabaseField(generatedId = true)
-	//private int id;
-	@DatabaseField(id = true)
+	@DatabaseField(generatedId = true)
+	private int id;
+	@DatabaseField()
 	private String name;
 	@DatabaseField
 	private String password;
 	
-	private static final Dao<TestDB, String> testDB = initialize();
+	private static final Dao<TestDB, Integer> testDB = initialize();
 	
 	public TestDB() { }
 	
@@ -43,8 +43,16 @@ public class TestDB implements IDAO {
 		this.password = password;
 	}
 	
-	private static Dao<TestDB, String> initialize(){
-		Dao<TestDB, String> temp;
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	private static Dao<TestDB, Integer> initialize(){
+		Dao<TestDB, Integer> temp;
 		try {
 			temp = DaoManager.createDao(DBCalls.getDBCalls().getConnectionSource(), TestDB.class);
 			return temp;
@@ -61,6 +69,7 @@ public class TestDB implements IDAO {
 		try {
 			TableUtils.createTableIfNotExists(DBCalls.getDBCalls().getConnectionSource(), TestDB.class);
 			testDB.create(this);
+			this.id = testDB.extractId(this);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -68,16 +77,14 @@ public class TestDB implements IDAO {
 	}
 
 	@Override
-	public TestDB get() {
+	public TestDB getByID() {
 		// TODO Auto-generated method stub
-		if(!this.name.equals("")){
-			synchronized (TestDB.class) {
-				try {
-					return testDB.queryForId(this.name);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		synchronized (TestDB.class) {
+			try {
+				return testDB.queryForId(this.id);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return null;

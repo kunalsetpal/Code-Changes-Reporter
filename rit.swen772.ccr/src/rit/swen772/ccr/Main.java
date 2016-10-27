@@ -11,9 +11,9 @@ public class Main {
 		//sObject.save();
 		
 		TestDB gObject = new TestDB();
-		gObject.setName("Hiraga");
-		//gObject = gObject.get();
-		System.out.println(gObject.getPassword());
+		gObject.setId(sObject.getId());
+		gObject = gObject.getByID();
+		System.out.println(gObject.getPassword() + " - " + gObject.getName());
 		/*
 		 * End DB Call
 		 */

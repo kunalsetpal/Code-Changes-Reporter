@@ -57,7 +57,9 @@ public class GitHubCalls {
 	public void getRepositoryDescription(){
 		// get description of repositories
 		try {
-			Repository repo = this.service.getRepository(this.userName, this.project);
+			Repository repo = this.service.getRepository(this.repoID);
+			// another way of initializing a Repository object 
+			//Repository repo = this.service.getRepository(this.userName, this.project);
 			System.out.println(repo.getDescription());
 		} catch(Exception e) { e.printStackTrace(); }
 	}
@@ -65,9 +67,6 @@ public class GitHubCalls {
 	public void getRepositoryTags(){
 		// get tags of repositories
 		try {
-			Repository repo = this.service.getRepository(this.repoID);
-			// another way of initializing a Repository object 
-			//Repository repo = this.service.getRepository(this.userName, this.project);
 			for(RepositoryTag repoTags : this.service.getTags(this.repo)){
 				System.out.println(repoTags.getName());
 			}
