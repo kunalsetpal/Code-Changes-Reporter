@@ -7,12 +7,17 @@ public class Main {
 		/*
 		 * DB Call
 		 */
-		//DBCalls dbCall = new DBCalls();
-		//dbCall.saveNamePassword("Satoshi", "Ketchum");
+		TestDB sObject = new TestDB("Satoshi", "Ketchum");
+		//sObject.save();
+		
+		TestDB gObject = new TestDB();
+		gObject.setName("Hiraga");
+		//gObject = gObject.get();
+		System.out.println(gObject.getPassword());
 		/*
 		 * End DB Call
 		 */
 		
-		GitHubCalls gitHubCalls = new GitHubCalls("yarnpkg", "yarn");
+		//GitHubCalls gitHubCalls = new GitHubCalls("yarnpkg", "yarn");
 	}
 }
