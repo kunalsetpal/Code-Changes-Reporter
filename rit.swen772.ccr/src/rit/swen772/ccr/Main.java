@@ -3,19 +3,24 @@ package rit.swen772.ccr;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.ObjectInputStream.GetField;
 import java.nio.file.attribute.GroupPrincipal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.egit.github.core.*;
 import org.eclipse.egit.github.core.client.*;
+import org.eclipse.egit.github.core.event.ForkApplyPayload;
 import org.eclipse.egit.github.core.service.*;
 
 import com.j256.ormlite.dao.Dao;
@@ -29,7 +34,7 @@ public class Main {
 	
 	public static void main(String [] args){
 		client = new GitHubClient();
-		client.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
+		client.setCredentials("LumbardhAgaj", "SIRcleaner123");
 //		client.setOAuth2Token(Credentials.TOKEN);
 		//githubClient.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
 		
@@ -38,13 +43,16 @@ public class Main {
 //		RepositoryService repoService = new RepositoryService(client);
 		
 		RepositoryService service = new RepositoryService();
-		RepositoryId repoID = new RepositoryId("yarnpkg", "yarn");
+		RepositoryId repoID = new RepositoryId("libgdx","libgdx");
 		CommitService cService = new CommitService();
 		
+		
 		//COMMENT this out if you want to reduce calls
-		fetchContributorsAndCommitsPerReleaseForRepository(repoID);
+		//fetchContributorsAndCommitsPerReleaseForRepository(repoID);
+		
 		
 		try {
+			getNumberOfForksPerRelease(repoID);
 			/*for(Repository repo : service.getRepositories("yarnpkg"))
 				System.out.println(repo.getName());*/
 			//Repository repo = service.getRepository("yarnpkg", "yarn");
@@ -103,7 +111,7 @@ public class Main {
 		} catch(Exception e) { e.printStackTrace(); }
 	}
 	
-	public static void fetchContributorsAndCommitsPerReleaseForRepository(RepositoryId repositoryID) {
+	/*public static void fetchContributorsAndCommitsPerReleaseForRepository(RepositoryId repositoryID) {
 		
 		try {
 			RepositoryService repoService = new RepositoryService(client);
@@ -210,7 +218,75 @@ public class Main {
 			printWriter.close();
 			
 		} catch(Exception e) { e.printStackTrace(); }
+	}*/
+	
+	public static void  getNumberOfForksPerRelease(RepositoryId repositoryID) throws IOException
+	{
+		
+		RepositoryService repoService = new RepositoryService(client);		
+		List <Release> listRelease = repoService.getReleases(repositoryID);
+		Map<Long, Integer> numberOfForksPerRel = new HashMap<Long,Integer>();
+		
+		
+		List <Repository> repForks = repoService.getForks(repositoryID);
+		int nonreleaseforksCounter = 0;
+		
+		for(int i=0;i<listRelease.size();i++)
+		{
+			Release current = listRelease.get(i);
+			Release next = null;
+			int forksCounter = 0;	//for every release, reset the forksCounterPerRelease to zero;
+			
+			if((i+1)!=listRelease.size())
+			{
+				next = listRelease.get(i+1);
+			}
+			
+			for(int j =0;j<repForks.size();j++)
+			{
+				Date currentForkDate = repForks.get(j).getCreatedAt();
+				if(next!=null)
+				{
+					if(currentForkDate.before(current.getCreatedAt()) && currentForkDate.after(next.getCreatedAt()))
+					{
+							numberOfForksPerRel.put(current.getId(),++forksCounter);
+					}
+					else if(i==0 && currentForkDate.after(current.getCreatedAt()))	//find all non-release forks, or forks that occurred after the latest release.
+					{
+							numberOfForksPerRel.put(100L,++nonreleaseforksCounter);
+					}			
+				}
+				else
+				{
+					if(currentForkDate.before(current.getCreatedAt()))// find all the forks made in the earliest release.
+					{
+						numberOfForksPerRel.put(current.getId(), ++forksCounter);			
+					}
+				}
+				
+			}
+		}
+		
+		for (Long key: numberOfForksPerRel.keySet())
+		{
+			int val = numberOfForksPerRel.get(key);
+			System.out.println("Release id="+ key+ " , Number of forks="+val);
+		}
+		int relCounter=0;
+		
+		for(Release rel : listRelease)
+		{	relCounter++;
+			System.out.println("Release id"+ rel.getId()+ " , created at:"+rel.getCreatedAt()+ " release number"+ relCounter);
+		}
+		System.out.println(listRelease.size());
+
+		/*int repoCounter = 0;
+		for(Repository r:repForks)
+		{	repoCounter++;
+			System.out.println(r.getCreatedAt()+ " "+ r.getId()+ " "+ repoCounter);
+		}	*/
 	}
+	
 	
 	
 	

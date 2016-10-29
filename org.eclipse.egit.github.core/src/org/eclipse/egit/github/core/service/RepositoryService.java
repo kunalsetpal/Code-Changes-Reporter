@@ -847,6 +847,7 @@ public class RepositoryService extends GitHubService {
 		StringBuilder uri = new StringBuilder(SEGMENT_REPOS);
 		uri.append('/').append(id);
 		uri.append(SEGMENT_RELEASES);
+		System.out.println(uri);
 		PagedRequest<Release> request = createPagedRequest();
 		request.setUri(uri);
 		request.setType(new TypeToken<List<Release>>() {
