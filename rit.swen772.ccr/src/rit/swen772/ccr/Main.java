@@ -1,5 +1,6 @@
 package rit.swen772.ccr;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,12 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
+=======
+>>>>>>> 802e326b516baf94ec368a23b37cef40155e2428
 public class Main {
 	
-	private static GitHubClient client;
-	
 	public static void main(String [] args){
+<<<<<<< HEAD
 		client = new GitHubClient();
 		client.setCredentials("LumbardhAgaj", "SIRcleaner123");
 //		client.setOAuth2Token(Credentials.TOKEN);
@@ -293,16 +295,23 @@ public class Main {
 	private class ORMSQLite{
 		private final String databaseUrl = "jdbc:sqlite:sample.db";
 		private JdbcConnectionSource connectionSource;
+=======
 		
-		public ORMSQLite(){
-			try {
-				connectionSource = new JdbcConnectionSource(databaseUrl);
-				Dao<TestDB, String> testDB = DaoManager.createDao(connectionSource, TestDB.class);
-				TableUtils.createTableIfNotExists(connectionSource, TestDB.class);
-				TestDB tdb = new TestDB("Yakuma", "Saito");
-				testDB.create(tdb);
-				connectionSource.close();
-			} catch(Exception e) { e.printStackTrace(); }
-		}
+		/*
+		 * DB Call
+		 */
+		TestDB sObject = new TestDB("Satoshi", "Ketchum");
+		//sObject.save();
+		
+		TestDB gObject = new TestDB();
+		gObject.setId(sObject.getId());
+		gObject = gObject.getByID();
+		System.out.println(gObject.getPassword() + " - " + gObject.getName());
+		/*
+		 * End DB Call
+		 */
+>>>>>>> 802e326b516baf94ec368a23b37cef40155e2428
+		
+		//GitHubCalls gitHubCalls = new GitHubCalls("yarnpkg", "yarn");
 	}
 }
