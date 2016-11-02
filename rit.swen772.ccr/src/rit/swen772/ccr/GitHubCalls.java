@@ -32,10 +32,10 @@ public class GitHubCalls {
 		this.userName = userName;
 		this.project = project;
 		
+		this.client = new GitHubClient();
 		//this.client.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
 		this.client.setOAuth2Token(Credentials.TOKEN);
 		
-		this.client = new GitHubClient();
 		this.service = new RepositoryService();
 		this.repoID = new RepositoryId(this.userName, this.project);
 		this.cService = new CommitService();
