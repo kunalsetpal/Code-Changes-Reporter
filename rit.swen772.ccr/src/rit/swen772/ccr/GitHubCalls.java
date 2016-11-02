@@ -42,7 +42,7 @@ public class GitHubCalls {
 		//this.client.setOAuth2Token(Credentials.TOKEN);
 		
 		this.client = new GitHubClient();
-		client.setCredentials("LumbardhAgaj", "SIRcleaner123");
+		client.setCredentials("LumbardhAgaj", "*");
 		this.service = new RepositoryService();
 		this.repoID = new RepositoryId(this.userName, this.project);
 		this.cService = new CommitService();
@@ -220,7 +220,7 @@ public class GitHubCalls {
 	public static void  getNumberOfForksPerRelease(RepositoryId repositoryID)
 	{
 		GitHubClient client = new GitHubClient();
-		client.setCredentials("LumbardhAgaj", "SIRcleaner123");
+		client.setCredentials("LumbardhAgaj", "*");
 		
 		RepositoryService repoService = new RepositoryService(client);
 		Map<Long, Integer> numberOfForksPerRel = new HashMap<Long,Integer>(); // I am saving for each release id the number of forks that it has. It's easier to save the values in db.
@@ -297,14 +297,15 @@ public class GitHubCalls {
 		RepositoryId repoID = new RepositoryId("yarnpkg", "yarn");
 
 		//getNumberOfBranchesPerRelease(repoID);
-		getNumberOfWatchersPerRelease(repoID);
+		//getNumberOfWatchersPerRelease(repoID);
 		//getNumberOfForksPerRelease(repoID);
 	}
+	
 	
 	public static void  getNumberOfBranchesPerRelease(RepositoryId repositoryID)
 	{
 		GitHubClient client = new GitHubClient();
-		client.setCredentials("LumbardhAgaj", "SIRcleaner123");
+		client.setCredentials("LumbardhAgaj", "*");
 		
 		RepositoryService repoService = new RepositoryService(client);
 		CommitService commitService = new CommitService(client);
@@ -363,10 +364,10 @@ public class GitHubCalls {
 		}
 	}
 	
-	public static void  getNumberOfWatchersPerRelease(RepositoryId repositoryID)
+	/*public static void  getNumberOfWatchersPerRelease(RepositoryId repositoryID)
 	{
 		GitHubClient client = new GitHubClient();
-		client.setCredentials("LumbardhAgaj", "SIRcleaner123");
+		client.setCredentials("LumbardhAgaj", "*");
 		
 		RepositoryService repoService = new RepositoryService(client);
 		StargazerService stargazer = new StargazerService(client);
@@ -432,6 +433,6 @@ public class GitHubCalls {
 		{
 			int val = numberOfBranchesPerRel.get(key);
 			System.out.println("Release id="+ key+ " , Number of watchers="+val);
-		}
+		}*/
 	}
 }
