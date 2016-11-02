@@ -257,13 +257,6 @@ public class GitHubCalls {
 				}
 			}
 			
-			int relCounter=0;
-			
-			for(Release rel : listRelease)
-			{	relCounter++;
-				System.out.println("Release id"+ rel.getId()+ " ,release name: "+rel.getTagName()+" created at:"+rel.getCreatedAt()+ " release number"+ relCounter);
-			}
-			
 			for (Long key: numberOfForksPerRel.keySet())
 			{
 				int val = numberOfForksPerRel.get(key);
@@ -274,17 +267,6 @@ public class GitHubCalls {
 			System.out.println(exception.getMessage());
 		}
 		
-		
-		
-		
-		//.out.println(listRelease.size());*/
-
-		/*int repoCounter = 0;
-		for(Repository r:repForks)
-		{	repoCounter++;
-			System.out.println(r.getCreatedAt()+ " "+ r.getId()+ " "+ repoCounter);
-		}	*/
-	
 	
 	}
 	public RepositoryId getRepository()
@@ -292,14 +274,7 @@ public class GitHubCalls {
 		return repoID;
 	}
 	
-	public static void main(String [] args)
-	{		
-		RepositoryId repoID = new RepositoryId("yarnpkg", "yarn");
 
-		//getNumberOfBranchesPerRelease(repoID);
-		//getNumberOfWatchersPerRelease(repoID);
-		//getNumberOfForksPerRelease(repoID);
-	}
 	
 	
 	public static void  getNumberOfBranchesPerRelease(RepositoryId repositoryID)
@@ -316,9 +291,7 @@ public class GitHubCalls {
 		try
 		{
 			listRelease = repoService.getReleases(repositoryID); // Its the best to implement a local method to get releases, which invokes only once the github api and for each function call within the method returns a newly created object with releases.
-			System.out.println(listRelease.size()+ " number of releases");
 			repBranch = repoService.getBranches(repositoryID);
-			System.out.println(repBranch.size()+ ":number of branches");
 			int nonReleaseBranchesCounter = 0;
 			
 			for(int i=0;i<listRelease.size();i++)
@@ -334,15 +307,10 @@ public class GitHubCalls {
 					String branchCommitSha = repBranch.get(j).getCommit().getSha();
 					RepositoryCommit commitcomment = commitService.getCommit(repositoryID, branchCommitSha);
 					Date currentBranchDate = commitcomment.getCommit().getCommitter().getDate();	
-					
 					if(next!=null)
 					{
-						//System.out.println("Release id:"+current.getId()+"Current release date:"+current.getCreatedAt()+", next release date"+ next.getCreatedAt()+ ", currentBranchDate:"+currentBranchDate);
 						if(!currentBranchDate.after(current.getCreatedAt()) && currentBranchDate.after(next.getCreatedAt()))
-						{	numberOfBranchesPerRel.put(current.getId(),++branchCounter);
-						
-							
-						}
+						{	numberOfBranchesPerRel.put(current.getId(),++branchCounter);		 }
 						else if(i==0 && currentBranchDate.after(current.getCreatedAt()))	//find all non-release forks, or forks that occurred after the latest release.
 						{	numberOfBranchesPerRel.put(100L,++nonReleaseBranchesCounter);}			
 					}
@@ -364,75 +332,12 @@ public class GitHubCalls {
 		}
 	}
 	
-	/*public static void  getNumberOfWatchersPerRelease(RepositoryId repositoryID)
-	{
-		GitHubClient client = new GitHubClient();
-		client.setCredentials("LumbardhAgaj", "*");
-		
-		RepositoryService repoService = new RepositoryService(client);
-		StargazerService stargazer = new StargazerService(client);
-		CommitService commitService = new CommitService(client);
-		Map<Long, Integer> numberOfBranchesPerRel = new HashMap<Long,Integer>(); // I am saving for each release id the number of forks that it has. It's easier to save the values in db.
-		List <Release> listRelease;
-		List <User> repWatchers;
-		
-		try
-		{
-			listRelease = repoService.getReleases(repositoryID); // Its the best to implement a local method to get releases, which invokes only once the github api and for each function call within the method returns a newly created object with releases.
-			System.out.println(listRelease.size()+ " number of releases");
-			repWatchers = stargazer.getStargazers(repositoryID);
-			System.out.println(repWatchers.size()+ ":number of repo watchers");
-			int nonReleaseWatchersCounter =0;
-			for(int i=0;i<listRelease.size();i++)
-			{
-				Release current = listRelease.get(i);
-				Release next = null;
-				int watcherCounter = 0;	//for every release, reset the forksCounterPerRelease to zero;			
-				if((i+1)!=listRelease.size()) // if this is not the earliest release than fetch it for interval comparison.
-				{	next = listRelease.get(i+1); } 
-				
-				for(int j =0;j<repWatchers.size();j++) // for each fork, look if it falls in release i or i+i
-				{
-					try
-					{
-					Date currentWatcherDate = repWatchers.get(j).getCreatedAt();
-					System.out.println(currentWatcherDate);
-					
-					if(next!=null)
-					{
-						//System.out.println("Release id:"+current.getId()+"Current release date:"+current.getCreatedAt()+", next release date"+ next.getCreatedAt()+ ", currentBranchDate:"+currentBranchDate);
-						if(!currentWatcherDate.after(current.getCreatedAt()) && currentWatcherDate.after(next.getCreatedAt()))
-						{	numberOfBranchesPerRel.put(current.getId(),++watcherCounter);
-						
-							
-						}
-						else if(i==0 && currentWatcherDate.after(current.getCreatedAt()))	//find all non-release forks, or forks that occurred after the latest release.
-						{	numberOfBranchesPerRel.put(100L,++nonReleaseWatchersCounter);}			
-					}
-					else
-					{	if(!currentWatcherDate.after(current.getCreatedAt()))// find all the forks made in the earliest release.
-						{	numberOfBranchesPerRel.put(current.getId(), ++watcherCounter);			}
-					}	
-					}
-					catch(NullPointerException nullExc)
-					{
-						System.out.println("Date not found");
-					
-					}
-				}
-			}
-			
-		}
-		
-		catch(IOException exception)
-		{
-			System.out.println(exception.getMessage());
-		}
-		
-		for (Long key: numberOfBranchesPerRel.keySet())
-		{
-			int val = numberOfBranchesPerRel.get(key);
-			System.out.println("Release id="+ key+ " , Number of watchers="+val);
-		}*/
+	public static void main(String [] args)
+	{		
+		RepositoryId repoID = new RepositoryId("yarnpkg", "yarn");
+		 //getNumberOfBranchesPerRelease(repoID);
+		//getNumberOfForksPerRelease(repoID);
 	}
+	
+
 }
