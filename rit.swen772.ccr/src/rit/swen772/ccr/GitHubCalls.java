@@ -1,5 +1,6 @@
 package rit.swen772.ccr;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,10 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.eclipse.egit.github.core.CommitUser;
 import org.eclipse.egit.github.core.Release;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.RepositoryTag;
@@ -23,22 +24,32 @@ public class GitHubCalls {
 	private GitHubClient client;
 	private RepositoryService service;
 	private RepositoryId repoID;
-	private Repository repo;
 	private CommitService cService;
 	private String userName;
 	private String project;
+	private List<Repository> repositories;
+	private List<Release> releases;
+	private List<RepositoryCommit> commits;
+	private List<RepositoryBranch> branches;
+	private List<RepositoryTag> tags;
+	private List <Repository> forks;
 	
 	public GitHubCalls(String userName, String project){
 		this.userName = userName;
 		this.project = project;
-		
 		this.client = new GitHubClient();
 		//this.client.setCredentials(Credentials.USER_NAME, Credentials.PASSWORD);
 		this.client.setOAuth2Token(Credentials.TOKEN);
-		
 		this.service = new RepositoryService();
 		this.repoID = new RepositoryId(this.userName, this.project);
 		this.cService = new CommitService();
+		
+		this.repositories = null;
+		this.releases = null;
+		this.commits = null;
+		this.branches = null;
+		this.tags = null;
+		this.forks = null;
 	}
 	
 	public void setUserName(String userName){
@@ -49,7 +60,8 @@ public class GitHubCalls {
 	public void getRepositories(){
 		// get list of repositories
 		try {
-			for(Repository repo : this.service.getRepositories(this.userName))
+			this.repositories = this.service.getRepositories(this.userName);
+			for(Repository repo : this.repositories)
 				System.out.println(repo.getName());
 		} catch(Exception e) { e.printStackTrace(); }
 	}
@@ -61,13 +73,15 @@ public class GitHubCalls {
 			// another way of initializing a Repository object 
 			//Repository repo = this.service.getRepository(this.userName, this.project);
 			System.out.println(repo.getDescription());
+			
 		} catch(Exception e) { e.printStackTrace(); }
 	}
 	
 	public void getRepositoryTags(){
 		// get tags of repositories
 		try {
-			for(RepositoryTag repoTags : this.service.getTags(this.repo)){
+			this.tags = this.service.getTags(this.repoID);
+			for(RepositoryTag repoTags : this.tags){
 				System.out.println(repoTags.getName());
 			}
 		} catch(Exception e) { e.printStackTrace(); }
@@ -76,7 +90,8 @@ public class GitHubCalls {
 	public void getReleases(){
 		// get releases for repository
 		try {
-			for(Release repoReleases : this.service.getReleases(this.repoID)){
+			this.releases = this.service.getReleases(this.repoID);
+			for(Release repoReleases : this.releases){
 				System.out.println(repoReleases.getTagName());
 				System.out.println(repoReleases.getBody());
 				System.out.println(repoReleases.getAuthor().getLogin());
@@ -88,8 +103,9 @@ public class GitHubCalls {
 	public void getCommitsInfo(){
 		// get information of commits for a repository. It is limited to 20 commits
 		try {
+			this.commits = cService.getCommits(repoID);
 			int counter = 0;
-			for(RepositoryCommit commit : cService.getCommits(repoID)){
+			for(RepositoryCommit commit : this.commits){
 				System.out.println(commit.getCommit().getMessage());
 				System.out.println(commit.getCommit().getAuthor().getName());
 				System.out.println(commit.getCommit().getAuthor().getDate());
@@ -106,14 +122,18 @@ public class GitHubCalls {
 	public void getContributorsAndCommitsPerRelease() {
 		// save release and contributors per release
 		try {
-			List <Release>listRelease = this.service.getReleases(this.repoID);
+			if(this.releases == null)
+				this.releases = this.service.getReleases(this.repoID);
 			//System.out.println(listRelease.size());
 			
 			//Sort Releases
-			Collections.sort(listRelease, (release1, release2) -> release1.getCreatedAt().compareTo(release2.getCreatedAt()));
+			Collections.sort(this.releases, (release1, release2) -> release1.getCreatedAt().compareTo(release2.getCreatedAt()));
 			
-			CommitService commitService = new CommitService(this.client);
-			List <RepositoryCommit>listCommit = commitService.getCommits(this.repoID);
+			List <RepositoryCommit> listCommit = null;
+			if(this.commits != null)
+				listCommit = this.commits;
+			else
+				listCommit = cService.getCommits(this.repoID);
 			
 			//Sort Repository Commits
 			Collections.sort(listCommit, (repoCommit1, repoCommit2) -> repoCommit1.getCommit().getCommitter().getDate().compareTo(repoCommit2.getCommit().getCommitter().getDate()));
@@ -130,7 +150,7 @@ public class GitHubCalls {
 			ArrayList<CommitUser> projectContributorsList = new ArrayList<CommitUser>();
 			Map<String, List<RepositoryCommit>> commitsByContributors = new HashMap<String, List<RepositoryCommit>>();
 			
-			for (Release release : listRelease) {
+			for (Release release : this.releases) {
 				releaseNumber++;
 				printWriter.println("RELEASE #" + releaseNumber);
 				printWriter.println("RELEASE DETAILS: " + release.getCreatedAt() + " " + release.getName());
@@ -208,5 +228,105 @@ public class GitHubCalls {
 			printWriter.close();
 			
 		} catch(Exception e) { e.printStackTrace(); }
+	}
+	
+	public void getNumberOfForksPerRelease()
+	{	//TODO: CHECK getContributorsAndCommitsPerRelease() FOR SORTING AND FILTERING
+		Map<Long, Integer> numberOfForksPerRel = new HashMap<Long,Integer>(); // I am saving for each release id the number of forks that it has. It's easier to save the values in db.
+		try
+		{
+			if(this.releases == null)
+				this.releases = this.service.getReleases(this.repoID);
+			// Its the best to implement a local method to get releases, which invokes only once the github api and for each function call within the method returns a newly created object with releases.
+			if(this.forks == null)
+				this.forks = this.service.getForks(this.repoID);
+			int nonReleaseForksCounter = 0;
+		
+			for(int i=0;i<this.releases.size();i++)
+			{
+				Release current = this.releases.get(i);
+				Release next = null;
+				int forksCounter = 0;	//for every release, reset the forksCounterPerRelease to zero;			
+				if((i+1)!=this.releases.size()) // if this is not the earliest release than fetch it for interval comparison.
+				{	next = this.releases.get(i+1); } 
+				
+				for(int j =0;j<this.forks.size();j++) // for each fork, look if it falls in release i or i+i
+				{
+					Date currentForkDate = this.forks.get(j).getCreatedAt();
+					if(next!=null)
+					{
+						if(currentForkDate.before(current.getCreatedAt()) && currentForkDate.after(next.getCreatedAt()))
+						{	numberOfForksPerRel.put(current.getId(),++forksCounter);}
+						else if(i==0 && currentForkDate.after(current.getCreatedAt()))	//find all non-release forks, or forks that occurred after the latest release.
+						{	numberOfForksPerRel.put(100L,++nonReleaseForksCounter);}			
+					}
+					else
+					{	if(currentForkDate.before(current.getCreatedAt()))// find all the forks made in the earliest release.
+						{	numberOfForksPerRel.put(current.getId(), ++forksCounter);			}
+					}		
+				}
+			}
+			
+			for (Long key: numberOfForksPerRel.keySet())
+			{
+				int val = numberOfForksPerRel.get(key);
+				System.out.println("Release id="+ key+ " , Number of forks="+val);
+			}
+		}catch(IOException exception)
+		{
+			System.out.println(exception.getMessage());
+		}
+	}
+	
+	public void  getNumberOfBranchesPerRelease()
+	{	//TODO: CHECK getContributorsAndCommitsPerRelease() FOR SORTING AND FILTERING
+		Map<Long, Integer> numberOfBranchesPerRel = new HashMap<Long,Integer>(); // I am saving for each release id the number of forks that it has. It's easier to save the values in db.
+		try
+		{
+			if(this.releases == null)
+				this.releases = this.service.getReleases(this.repoID);
+			// Its the best to implement a local method to get releases, which invokes only once the github api and for each function call within the method returns a newly created object with releases.
+			if(this.branches == null)
+				this.branches = this.service.getBranches(this.repoID);
+
+			int nonReleaseBranchesCounter = 0;
+			
+			for(int i=0;i<this.releases.size();i++)
+			{
+				Release current = this.releases.get(i);
+				Release next = null;
+				int branchCounter = 0;	//for every release, reset the forksCounterPerRelease to zero;			
+				if((i+1)!=this.releases.size()) // if this is not the earliest release than fetch it for interval comparison.
+				{	next = this.releases.get(i+1); } 
+				
+				for(int j =0;j<this.branches.size();j++) // for each fork, look if it falls in release i or i+i
+				{
+					//TODO: VERIFY IF getSha() RETRIEVES AN UNIQUE IDENTIFIER AND GET IT FROM THE this.commits
+					String branchCommitSha = this.branches.get(j).getCommit().getSha();
+					RepositoryCommit commitcomment = this.cService.getCommit(this.repoID, branchCommitSha);
+					Date currentBranchDate = commitcomment.getCommit().getCommitter().getDate();	
+					if(next!=null)
+					{
+						if(!currentBranchDate.after(current.getCreatedAt()) && currentBranchDate.after(next.getCreatedAt()))
+						{	numberOfBranchesPerRel.put(current.getId(),++branchCounter);		 }
+						else if(i==0 && currentBranchDate.after(current.getCreatedAt()))	//find all non-release forks, or forks that occurred after the latest release.
+						{	numberOfBranchesPerRel.put(100L,++nonReleaseBranchesCounter);}			
+					}
+					else
+					{	if(!currentBranchDate.after(current.getCreatedAt()))// find all the forks made in the earliest release.
+						{	numberOfBranchesPerRel.put(current.getId(), ++branchCounter);			}
+					}	
+				}
+			}
+		}catch(IOException exception)
+		{
+			System.out.println(exception.getMessage());
+		}
+		
+		for (Long key: numberOfBranchesPerRel.keySet())
+		{
+			int val = numberOfBranchesPerRel.get(key);
+			System.out.println("Release id="+ key+ " , Number of branches="+val);
+		}
 	}
 }

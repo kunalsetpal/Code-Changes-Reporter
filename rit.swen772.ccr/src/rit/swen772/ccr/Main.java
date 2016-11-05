@@ -7,17 +7,25 @@ public class Main {
 		/*
 		 * DB Call
 		 */
-		TestDB sObject = new TestDB("Satoshi", "Ketchum");
+		//TestDB sObject = new TestDB("Satoshi", "Ketchum");
 		//sObject.save();
 		
-		TestDB gObject = new TestDB();
+		/*TestDB gObject = new TestDB();
 		gObject.setId(sObject.getId());
 		gObject = gObject.getByID();
-		System.out.println(gObject.getPassword() + " - " + gObject.getName());
+		System.out.println(gObject.getPassword() + " - " + gObject.getName());*/
 		/*
 		 * End DB Call
 		 */
 		
-		//GitHubCalls gitHubCalls = new GitHubCalls("yarnpkg", "yarn");
+		GitHubCalls gitHubCalls = new GitHubCalls("yarnpkg", "yarn");
+		gitHubCalls.getRepositories();
+		gitHubCalls.getReleases();
+		gitHubCalls.getRepositoryTags();
+		gitHubCalls.getRepositoryDescription();
+		gitHubCalls.getCommitsInfo();
+		gitHubCalls.getContributorsAndCommitsPerRelease();
+		//gitHubCalls.getNumberOfBranchesPerRelease();
+		gitHubCalls.getNumberOfForksPerRelease();
 	}
 }
